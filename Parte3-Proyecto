@@ -1,0 +1,245 @@
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+        final int CANTIDAD = 200;
+        double[] datos = new double[CANTIDAD];
+        Random random = new Random();
+
+            for (int i = 0; i < CANTIDAD; i++) {
+            double valor = Math.round((0.5 + random.nextDouble() * 23.5) * 2) / 2.0;
+            datos[i] = valor;
+        }
+
+        System.out.println("   USO DEL TELÉFONO EN HORARIO ESCOLAR (horas por día)");
+
+            System.out.println("\n DATOS ORIGINALES (" + CANTIDAD + " registros):");
+            System.out.println("----------------------------------------------------------");
+            imprimirArreglo(datos, CANTIDAD);
+
+            double[] datosOrdenados = Arrays.copyOf(datos, CANTIDAD);
+            Arrays.sort(datosOrdenados);
+            for (int i = 0; i < CANTIDAD / 2; i++) {
+                double temp = datosOrdenados[i];
+                datosOrdenados[i] = datosOrdenados[CANTIDAD - 1 - i];
+                datosOrdenados[CANTIDAD - 1 - i] = temp;
+            }
+
+            System.out.println("\n DATOS ORDENADOS DE MAYOR A MENOR:");
+            System.out.println("----------------------------------------------------------");
+            imprimirArreglo(datosOrdenados, CANTIDAD);
+
+            double media   = calcularMedia(datos, CANTIDAD);
+            double mediana = calcularMediana(datosOrdenados, CANTIDAD);
+            double max     = datosOrdenados[0];
+            double min     = datosOrdenados[CANTIDAD - 1];
+            double rango   = max - min;
+
+            System.out.println("\n TABLA DE FRECUENCIAS (intervalos de 2 horas):");
+            System.out.println("----------------------------------------------------------");
+            System.out.printf("%-18s %-12s %-10s%n", "Intervalo (h)", "Frecuencia", "Porcentaje");
+            System.out.println("----------------------------------------------------------");
+
+            int[] freqInterv = new int[12];
+            for (double d : datos) {
+                int idx = (int) Math.ceil(d / 2) - 1;
+                if (idx < 0) idx = 0;
+                if (idx > 11) idx = 11;
+                freqInterv[idx]++;
+            }
+            for (int i = 0; i < 12; i++) {
+                int limInf = i * 2 + 1;
+                int limSup = i * 2 + 2;
+                double pct = (freqInterv[i] * 100.0) / CANTIDAD;
+                String barra = " ".repeat(freqInterv[i] / 3);
+                System.out.printf("[%2d - %2d]        %-12d %.1f%% %s%n",
+                        limInf, limSup, freqInterv[i], pct, barra);
+            }
+
+            Map<Double, Integer> freqMap = new HashMap<>();
+            for (double d : datos) freqMap.put(d, freqMap.getOrDefault(d, 0) + 1);
+
+            int maxFreq = Collections.max(freqMap.values());
+            List<Double> modas = new ArrayList<>();
+            for (Map.Entry<Double, Integer> e : freqMap.entrySet())
+                if (e.getValue() == maxFreq) modas.add(e.getKey());
+            Collections.sort(modas);
+
+            System.out.println("                    MEDIDAS ESTADÍSTICAS");
+
+            System.out.printf("  Media    : %.2f horas%n", media);
+            System.out.printf("  Mediana  : %.1f horas%n", mediana);
+            System.out.print ("  Moda     : ");
+            for (int i = 0; i < modas.size(); i++) {
+                System.out.printf("%.1f", modas.get(i));
+                if (i < modas.size() - 1) System.out.print(", ");
+            }
+            System.out.println(" hora(s)  (frecuencia: " + maxFreq + " veces)");
+            System.out.printf("  Rango    : %.1f horas  (max=%.1f  /  min=%.1f)%n",
+                    rango, max, min);
+
+            int n = 40;
+
+        System.out.println("\n=======================================================");
+        System.out.println("         MUESTREO ALEATORIO SIMPLE  (n=" + n + ")");
+        System.out.println("  Selecciona 40 elementos al azar sin reemplazo");
+
+        System.out.println("==========================================================");
+
+            List<Integer> indices = new ArrayList<>();
+            for (int i = 0; i < CANTIDAD; i++) indices.add(i);
+            Collections.shuffle(indices, random);
+
+            double[] muestraSimple = new double[n];
+            System.out.print("  Índices seleccionados: ");
+            for (int i = 0; i < n; i++) {
+                muestraSimple[i] = datos[indices.get(i)];
+                System.out.print(indices.get(i) + (i < n - 1 ? ", " : ""));
+            }
+            System.out.println();
+            System.out.println("  Valores de la muestra:");
+            imprimirArreglo(muestraSimple, n);
+
+            double[] muestraSimpleOrd = Arrays.copyOf(muestraSimple, n);
+            Arrays.sort(muestraSimpleOrd);
+            for (int i = 0; i < n / 2; i++) {
+                double t = muestraSimpleOrd[i];
+                muestraSimpleOrd[i] = muestraSimpleOrd[n - 1 - i];
+                muestraSimpleOrd[n - 1 - i] = t;
+            }
+            System.out.printf("  Media de la muestra   : %.2f horas%n",
+        calcularMedia(muestraSimple, n));
+            System.out.printf("  Mediana de la muestra: %.1f horas%n",
+        calcularMediana(muestraSimpleOrd, n));
+            System.out.printf("  Rango de la muestra   : %.1f horas%n",
+                muestraSimpleOrd[0] - muestraSimpleOrd[n - 1]);
+
+            int k = CANTIDAD / n; // intervalo = 5
+
+        System.out.println("\n=======================================================");
+        System.out.println("         MUESTREO SISTEMÁTICO  (n=" + n + ", k=" + k + ")");
+        System.out.println("  Punto de inicio aleatorio, luego cada k=" + k + " elementos");
+
+        System.out.println("==========================================================");
+
+            int inicio = random.nextInt(k); // arranque aleatorio entre 0 y k-1
+            double[] muestraSistematica = new double[n];
+            System.out.print("  Índices seleccionados: ");
+            for (int i = 0; i < n; i++) {
+                int idx = inicio + i * k;
+                muestraSistematica[i] = datos[idx];
+                System.out.print(idx + (i < n - 1 ? ", " : ""));
+            }
+            System.out.println();
+            System.out.println("  Valores de la muestra:");
+            imprimirArreglo(muestraSistematica, n);
+
+            double[] muestraSistOrd = Arrays.copyOf(muestraSistematica, n);
+            Arrays.sort(muestraSistOrd);
+            for (int i = 0; i < n / 2; i++) {
+                double t = muestraSistOrd[i];
+                muestraSistOrd[i] = muestraSistOrd[n - 1 - i];
+                muestraSistOrd[n - 1 - i] = t;
+            }
+            System.out.printf("  Media de la muestra   : %.2f horas%n",
+        calcularMedia(muestraSistematica, n));
+            System.out.printf("  Mediana de la muestra: %.1f horas%n",
+        calcularMediana(muestraSistOrd, n));
+            System.out.printf("  Rango de la muestra   : %.1f horas%n",
+                muestraSistOrd[0] - muestraSistOrd[n - 1]);
+
+            System.out.println("         MUESTREO ESTRATIFICADO  (n=" + n + ")");
+            System.out.println("  4 estratos de 50 datos → 10 elementos por estrato");
+            System.out.println("  Estrato 1: datos[0..49]   Estrato 2: datos[50..99]");
+            System.out.println("  Estrato 3: datos[100..149] Estrato 4: datos[150..199]");
+
+        System.out.println("==========================================================");
+
+            int numEstratos = 4;
+            int tamEstrato  = CANTIDAD / numEstratos; // 50
+            int porEstrato  = n / numEstratos;        // 10
+            double[] muestraEstrat = new double[n];
+            int pos = 0;
+
+            for (int e = 0; e < numEstratos; e++) {
+                // Crear lista de índices del estrato
+                List<Integer> estrato = new ArrayList<>();
+                for (int i = e * tamEstrato; i < (e + 1) * tamEstrato; i++) estrato.add(i);
+                Collections.shuffle(estrato, random);
+
+                System.out.print("  Estrato " + (e + 1) + " - índices: ");
+                for (int i = 0; i < porEstrato; i++) {
+                    int idxEst = estrato.get(i);
+                    muestraEstrat[pos++] = datos[idxEst];
+                    System.out.print(idxEst + (i < porEstrato - 1 ? ", " : ""));
+                }
+                System.out.println();
+            }
+            System.out.println("  Valores de la muestra:");
+            imprimirArreglo(muestraEstrat, n);
+
+            double[] muestraEstratOrd = Arrays.copyOf(muestraEstrat, n);
+            Arrays.sort(muestraEstratOrd);
+            for (int i = 0; i < n / 2; i++) {
+                double t = muestraEstratOrd[i];
+                muestraEstratOrd[i] = muestraEstratOrd[n - 1 - i];
+                muestraEstratOrd[n - 1 - i] = t;
+            }
+            System.out.printf("  Media de la muestra   : %.2f horas%n",
+        calcularMedia(muestraEstrat, n));
+            System.out.printf("  Mediana de la muestra: %.1f horas%n",
+        calcularMediana(muestraEstratOrd, n));
+            System.out.printf("  Rango de la muestra   : %.1f horas%n",
+                muestraEstratOrd[0] - muestraEstratOrd[n - 1]);
+
+        System.out.println("\n=======================================================");
+        System.out.println("         COMPARATIVA: MUESTRAS vs POBLACIÓN TOTAL");
+
+        System.out.println("==========================================================");
+            System.out.printf("  %-25s %-10s %-10s %-10s%n", "Tipo", "Media", "Mediana",
+        "Rango");
+            System.out.println("  ----------------------------------------------------");
+            System.out.printf("  %-25s %-10.2f %-10.1f %-10.1f%n",
+                    "Población (n=200)", media, mediana, rango);
+            System.out.printf("  %-25s %-10.2f %-10.1f %-10.1f%n",
+                    "M. Aleatorio Simple (40)",
+                    calcularMedia(muestraSimple, n),
+                    calcularMediana(muestraSimpleOrd, n),
+                    muestraSimpleOrd[0] - muestraSimpleOrd[n - 1]);
+            System.out.printf("  %-25s %-10.2f %-10.1f %-10.1f%n",
+                    "M. Sistemático (40)",
+                    calcularMedia(muestraSistematica, n),
+                    calcularMediana(muestraSistOrd, n),
+                    muestraSistOrd[0] - muestraSistOrd[n - 1]);
+            System.out.printf("  %-25s %-10.2f %-10.1f %-10.1f%n",
+                    "M. Estratificado (40)",
+                    calcularMedia(muestraEstrat, n),
+                    calcularMediana(muestraEstratOrd, n),
+                    muestraEstratOrd[0] - muestraEstratOrd[n - 1]);
+
+        System.out.println("==========================================================");
+    }
+
+    static void imprimirArreglo(double[] arr, int n) {
+        for (int i = 0; i < n; i++) {
+            System.out.printf("%5.1f", arr[i]);
+            if ((i + 1) % 10 == 0) System.out.println();
+            else                    System.out.print("  ");
+        }
+        if (n % 10 != 0) System.out.println();
+    }
+
+    static double calcularMedia(double[] arr, int n) {
+        double suma = 0;
+        for (double v : arr) suma += v;
+        return suma / n;
+    }
+
+    static double calcularMediana(double[] ordenado, int n) {
+        if (n % 2 == 0)
+            return (ordenado[n / 2 - 1] + ordenado[n / 2]) / 2.0;
+        else
+            return ordenado[n / 2];
+    }
+}
