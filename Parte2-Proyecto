@@ -1,0 +1,92 @@
+import java.util.Arrays;
+import java.util.Random;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        double[] numeros = new double[200];
+        Random random = new Random();
+
+        for (int i = 0; i < numeros.length; i++) {
+            numeros[i] = Math.round(random.nextDouble() * 10000) / 100.0;
+        }
+
+        System.out.println("Números generados:");
+        for (int i = 0; i < numeros.length; i++) {
+            System.out.printf("%.2f  ", numeros[i]);
+
+            if ((i + 1) % 10 == 0) {
+                System.out.println();
+            }
+        }
+
+        double media = calcularMedia(numeros);
+        double mediana = calcularMediana(numeros);
+        double moda = calcularModa(numeros);
+        double rango = calcularRango(numeros);
+
+        System.out.println("\n\nResultados:");
+        System.out.printf("Media: %.2f\n", media);
+        System.out.printf("Mediana: %.2f\n", mediana);
+        System.out.printf("Moda: %.2f\n", moda);
+        System.out.printf("Rango muestral: %.2f\n", rango);
+    }
+
+    public static double calcularMedia(double[] numeros) {
+        double suma = 0;
+        for (double num : numeros) {
+            suma += num;
+        }
+        return suma / numeros.length;
+    }
+
+    public static double calcularMediana(double[] numeros) {
+        double[] copia = numeros.clone();
+        Arrays.sort(copia);
+
+        int mitad = copia.length / 2;
+
+        if (copia.length % 2 == 0) {
+            return (copia[mitad - 1] + copia[mitad]) / 2;
+        } else {
+            return copia[mitad];
+        }
+    }
+
+    public static double calcularModa(double[] numeros) {
+
+        double moda = numeros[0];
+        int maxFrecuencia = 0;
+
+        for (int i = 0; i < numeros.length; i++) {
+            int frecuencia = 0;
+
+            for (int j = 0; j < numeros.length; j++) {
+                if (numeros[i] == numeros[j]) {
+                    frecuencia++;
+                }
+            }
+
+            if (frecuencia > maxFrecuencia) {
+                maxFrecuencia = frecuencia;
+                moda = numeros[i];
+            }
+        }
+
+        return moda;
+    }
+
+    public static double calcularRango(double[] numeros) {
+
+        double min = numeros[0];
+        double max = numeros[0];
+
+        for (double num : numeros) {
+            if (num < min) min = num;
+            if (num > max) max = num;
+        }
+
+        return max - min;
+    }
+}
