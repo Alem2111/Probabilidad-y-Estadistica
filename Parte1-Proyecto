@@ -1,0 +1,25 @@
+import java.util.Random;
+
+public class main {
+
+    public static void main(String[] args) {
+
+        // Crear arreglo para 200 números
+        float[] poblacion = new float[200];
+
+        // Objeto Random
+        Random random = new Random();
+
+        System.out.println("Población de 200 números aleatorios:\n");
+
+        // Generar números flotantes entre 1 y 24
+        for (int i = 0; i < poblacion.length; i++) {
+
+            // Fórmula para rango de 1 a 24
+            poblacion[i] = 1 + random.nextFloat() * (24 - 1);
+
+            // Mostrar número
+            System.out.printf("Número %d: %.2f%n", (i + 1), poblacion[i]);
+        }
+    }
+}
